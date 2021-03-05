@@ -76,6 +76,7 @@ class Export
         foreach ($submissions as $submission) {
             $submission->response = json_decode($submission->response, true);
             $temp = [];
+            
             foreach ($inputLabels as $field => $label) {
                 $temp[] = trim(
                     wp_strip_all_tags(
@@ -156,10 +157,142 @@ class Export
             $submission->response = json_decode($submission->response, true);
         }
 
-        header('Content-disposition: attachment; filename=' . sanitize_title($form->title, 'export', 'view') . '-' . date('Y-m-d') . '.json');
-        header('Content-type: application/json');
-        echo json_encode($submissions);
-        exit();
+        // header('Content-disposition: attachment; filename=' . sanitize_title($form->title, 'export', 'view') . '-' . date('Y-m-d') . '.json');
+        // header('Content-type: application/json');
+        // echo json_encode($submissions);
+        // foreach($submissions as $data){
+        //     print_r($data->response['data_pendidikan_formal']);
+        // }
+        // exit();
+        ob_start();
+        ?>
+        <table border="1">
+            <tr>
+                <th>Informasi diperoleh dari </th>
+                <th>Sebutkan nama website/media sosial/lokasi informasi lowongan kerja diperoleh</th>
+                <th>Posisi yang dilamar</th>
+                <th>Nama Lengkap</th>
+                <th>NIK</th>
+                <th>Jenis Kelamin</th>
+                <th>Tanggal Lahir</th>
+                <th>Kabupaten/Kota Domisili</th>
+                <th>Alamat Domisili</th>
+                <th>Alamat Sesuai KTP</th>
+                <th>No. HP</th>
+                <th>No. WA</th>
+                <th>Email</th>
+                <th>Agama</th>
+                <th>Status Pernikahan</th>
+                <th>Tinggi Badan</th>
+                <th>Jenjang</th>
+                <th>Nama Sekolah/Universitas</th>
+                <th>Jurusan</th>
+                <th>Tahun Masuk</th>
+                <th>Tahun Lulus</th>
+                <th>IPK/Nilai Rata-Rata Rapor</th>
+                <th>Nama Pendidikan/Sertifikasi</th>
+                <th>Nama Lembaga</th>
+                <th>Tahun</th>
+                <th>Masa Berlaku (tahun)</th>
+                <th>Nama Ketrampilan</th>
+                <th>Nilai</th>
+                <th>Nama Perusahaan</th>
+                <th>Posisi</th>
+                <th>Mulai Bekerja (Bulan/Tahun)</th>
+                <th>Berhenti Bekerja (Bulan/Tahun)</th>
+                <th>Alasan Berhenti Bekerja</th>
+            </tr>
+        <?php
+        foreach($submissions as $data){
+            $pendformal = [];
+            $pendnonformal = [];
+            $ketrampilan = [];
+            $pengkerja = [];
+            foreach($data->response['data_pendidikan_formal'] as $pformal){
+                $payload = [
+                    'jenjang' => $pformal[0],
+                    'school_name' => $pformal[1],
+                    'jurusan' => $pformal[2],
+                    'tahun_masuk' => $pformal[3],
+                    'tahun_lulus' => $pformal[4],
+                    'ipk' => $pformal[5]
+                ];
+                array_push($pendformal, $payload);
+            }
+            foreach($data->response['repeater_field'] as $pnonformal){
+                $payload = [
+                    'pendidik' => $pnonformal[0],
+                    'lembaga' => $pnonformal[1],
+                    'tahun' => $pnonformal[2],
+                    'berlaku' => $pnonformal[3]
+                ];
+                array_push($pendnonformal, $payload);
+            }
+            foreach($data->response['data_ketrampilan'] as $trampil){
+                $payload = [
+                    'ketrampilan' => $trampil[0],
+                    'nilai' => $trampil[1]
+                ];
+                array_push($ketrampilan, $payload);
+            }
+            foreach($data->response['data_pengalaman_kerja'] as $kerja){
+                $payload = [
+                    'perusahaan' => $kerja[0],
+                    'posisi' => $kerja[1],
+                    'mulai' => $kerja[2],
+                    'berhenti' => $kerja[3],
+                    'alasan' => $kerja[4]
+                ];
+                array_push($pengkerja, $payload);
+            }
+            $jmlrow = [count($pendformal), count($pendnonformal), count($ketrampilan), count($pengkerja)];
+            $besar = max($jmlrow);
+            for($i=0;$i<=$besar;$i++){
+        ?>
+        <tr>
+            <td rowspan="<?=$besar;?>"><?=$data->response['dropdown_3']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['input_text_1']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['dropdown_4']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['names']['first_name']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['input_text']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['input_radio']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['datetime']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['dropdown']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['description']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['description']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['phone']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['phone_1']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['email']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['dropdown_1']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['dropdown_2']?></td>
+            <td rowspan="<?=$besar;?>"><?=$data->response['numeric-field']?></td>
+            <td>Jenjang</td>
+            <td>Nama Sekolah/Universitas</td>
+            <td>Jurusan</td>
+            <td>Tahun Masuk</td>
+            <td>Tahun Lulus</td>
+            <td>IPK/Nilai Rata-Rata Rapor</td>
+            <td>Nama Pendidikan/Sertifikasi</td>
+            <td>Nama Lembaga</td>
+            <td>Tahun</td>
+            <td>Masa Berlaku (tahun)</td>
+            <td>Nama Ketrampilan</td>
+            <td>Nilai</td>
+            <td>Nama Perusahaan</td>
+            <td>Posisi</td>
+            <td>Mulai Bekerja (Bulan/Tahun)</td>
+            <td>Berhenti Bekerja (Bulan/Tahun)</td>
+            <td>Alasan Berhenti Bekerja</td>
+        </tr>
+        <?php }} ?>
+        </table>
+        <?php
+        $dt = ob_get_clean();
+        // header("Content-type: application/vnd.ms-excel");
+        // header('Content-disposition: attachment; filename=' . sanitize_title($form->title, 'export', 'view') . '-' . date('Y-m-d') . '.xls');
+        echo $dt;
+        
+        // exit();
     }
 
     private function getSubmissions($formId)
